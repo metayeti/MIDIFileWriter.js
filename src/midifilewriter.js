@@ -208,7 +208,6 @@ var MIDIfw = (function() { "use strict";
 		}
 		function getTimeSigAndTempoMeta() {
 			var timeSigEvent = new MIDIEvent.meta(META_EVENT_TIMESIG, META_TIMESIG_DATA);
-			//var tempoData = [0x08, 0x7a, 0x24];
 			var tempoData = toBytes(Math.floor(6e7 / tempo), 3);
 			var tempoEvent = new MIDIEvent.meta(META_EVENT_TEMPO, tempoData);
 			return [timeSigEvent, tempoEvent];
