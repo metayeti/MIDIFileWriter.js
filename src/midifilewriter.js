@@ -1,6 +1,8 @@
 /*
  *  MIDIFileWriter
  *
+ *  0.8.0
+ *
  *  (c) 2017 Danijel Durakovic
  *  MIT license
  *
@@ -112,29 +114,29 @@ var MIDIfw = (function() { "use strict";
 	//
 	//  MIDI Track class
 	//
-	function MIDITrack() {
+	function MIDITrack(properties) {
+		var channel = (properties && properties.channel && properties.channel >= 0 && properties.channel <= MAX_CHANNEL)
+			? properties.channel
+			: DEFAULT_CHANNEL;
+
 		var eventList = [];
 
 		// public functions
 		this.setInstrument = function(properties) {
 			if (properties !== undefined && properties.instrument !== undefined) {
 				var time = properties.time || 0;
-				var channel = properties.channel || DEFAULT_CHANNEL;
 				var program = properties.instrument;
-				if (channel >= 0 && channel <= MAX_CHANNEL) {
-					var e = new MIDIEvent.programChange(time, channel, program);
-					eventList.push(e);
-				}
+				var e = new MIDIEvent.programChange(time, channel, program);
+				eventList.push(e);
 			}
 		};
 		this.noteOn = function(properties) {
 			if (properties !== undefined && properties.time !== undefined && properties.note !== undefined) {
 				var time = properties.time;
-				var channel = properties.channel || DEFAULT_CHANNEL;
 				var type = 0; // note ON
 				var note = properties.note;
 				var velocity = properties.velocity || DEFAULT_VELOCITY;
-				if (channel >= 0 && channel <= MAX_CHANNEL && note >= 0 && note <= MAX_NOTE && velocity >= 0 && velocity <= MAX_VELOCITY) {
+				if (note >= 0 && note <= MAX_NOTE && velocity >= 0 && velocity <= MAX_VELOCITY) {
 					var e = new MIDIEvent.note(time, channel, type, note, velocity);
 					eventList.push(e);
 				}
@@ -143,11 +145,10 @@ var MIDIfw = (function() { "use strict";
 		this.noteOff = function(properties) {
 			if (properties !== undefined && properties.time !== undefined && properties.note !== undefined) {
 				var time = properties.time;
-				var channel = properties.channel || DEFAULT_CHANNEL;
 				var note = properties.note;
 				var type = 1; // note OFF
 				var velocity = 0;
-				if (channel >= 0 && channel <= MAX_CHANNEL && note >= 0 && note <= MAX_NOTE) {
+				if (note >= 0 && note <= MAX_NOTE) {
 					var e = new MIDIEvent.note(time, channel, type, note, velocity);
 					eventList.push(e);
 				}
@@ -197,10 +198,11 @@ var MIDIfw = (function() { "use strict";
 
 		function getHeader() {
 			var n_tracks = trackList.length;
+			var n_all_tracks = (n_tracks > 1) ? n_tracks + 1 : n_tracks;
 			var bytes = HEADER_CHUNK_TYPE;
 			bytes = bytes.concat(HEADER_CHUNK_LENGTH);
 			bytes = bytes.concat((n_tracks > 1) ? HEADER_CHUNK_FORMAT1 : HEADER_CHUNK_FORMAT0);
-			bytes = bytes.concat(toBytes(n_tracks, 2));
+			bytes = bytes.concat(toBytes(n_all_tracks, 2));
 			bytes = bytes.concat(toBytes(tpb, 2));
 			return bytes;
 		}
@@ -252,8 +254,8 @@ var MIDIfw = (function() { "use strict";
 	// public API
 	//
 	return {
-		createTrack: function() {
-			return new MIDITrack();
+		createTrack: function(properties) {
+			return new MIDITrack(properties);
 		},
 		createFile: function(properties) {
 			return new MIDIFile(properties);

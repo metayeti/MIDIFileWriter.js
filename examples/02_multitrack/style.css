@@ -1,0 +1,16 @@
+body {
+	margin: 0;
+	padding: 0;
+}
+#makemidi {
+	position: absolute;
+	width: 320px;
+	height: 80px;
+	line-height: 76px;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	right: 0;
+	margin: auto;
+	font-size: 15px;
+}
