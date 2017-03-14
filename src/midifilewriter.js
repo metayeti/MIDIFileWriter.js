@@ -2,11 +2,15 @@
  *  MIDIFileWriter
  *
  *  (c) 2017 Danijel Durakovic
- *  MIT License
- * 
+ *  MIT license
+ *
  */
+
 var MIDIfw = (function() { "use strict";
-	// constants
+
+	//
+	//  constants
+	// 
 	var HEADER_CHUNK_TYPE = [0x4d, 0x54, 0x68, 0x64]; // MThd
 	var HEADER_CHUNK_LENGTH = [0x00, 0x00, 0x00, 0x06];
 	var HEADER_CHUNK_FORMAT0 = [0x00, 0x00];
@@ -19,19 +23,22 @@ var MIDIfw = (function() { "use strict";
 	var META_EVENT_END = 0x2f;
 	var META_EVENT_TIMESIG = 0x58;
 	var META_EVENT_TEMPO = 0x51;
+	var META_TIMESIG_DATA = [0x04, 0x02, 0x18, 0x08]; // hardcoded 4/4
 	var DEFAULT_CHANNEL = 0;
 	var DEFAULT_VELOCITY = 64;
 	var DEFAULT_TICKSPERBEAT = 96;
 	var DEFAULT_TEMPO = 60;
 	var DEFAULT_NUMERATOR = 4;
 	var DEFAULT_DENOMINATOR = 4;
+	var MAX_CHANNEL = 15;
+	var MAX_NOTE = 127;
+	var MAX_VELOCITY = 127;
+	var MAX_TICKSPERBEAT = 65535;
 	var DATAURI_PREFIX = 'data:audio/midi;base64,';
-
-	// global data
-	var tempo;
-	var timesig;
-
-	// helpers
+	
+	//
+	//  helper functions
+	//
 	function toBytes(number, byteCount) {
 		var bytes = new Array(byteCount);
 		for (var i = byteCount - 1; i >= 0; i--) {
@@ -41,16 +48,16 @@ var MIDIfw = (function() { "use strict";
 		return bytes;
 	}
 
-	function toVarLengthBytes(number) {
+	function toVarLenBytes(number) {
 		var bytes = [];
-		var first = true;
+		var last = true;
 		do {
 			var partial_value = number & 127;
 			number >>= 7;
-			if (first) {
+			if (last) {
 				// first bit is off for last byte
 				bytes.unshift(partial_value);
-				first = false;
+				last = false;
 			}
 			else {
 				// set first bit on for all other bytes
@@ -70,196 +77,164 @@ var MIDIfw = (function() { "use strict";
 	}
 
 	//
-	//  event classes
+	//  MIDI Event classes
 	//
-	function NoteEvent(time, channel, type, note, velocity) {
-		this.getBytes = function() {
-			var bytes = toVarLengthBytes(time);
-			var status = channel | ((type) ? MESSAGE_NOTEOFF_PREFIX : MESSAGE_NOTEON_PREFIX);
-			bytes.push(status, note, velocity);
-			return bytes;
-		};
-	}
-
-	function ProgramChangeEvent(time, channel, program) {
-		this.getBytes = function() {
-			var bytes = toVarLengthBytes(time);
-			var status = channel | MESSAGE_PROGRAMCHANGE_PREFIX;
-			bytes.push(status, program);
-			return bytes;
-		};
-	}
-
-	function MetaEvent(type, data) {
-		this.getBytes = function() {
-			data = data || [];
-			var time = 0;
-			var bytes = toVarLengthBytes(time);
-			bytes.push(META_EVENT_PREFIX);
-			bytes.push(type);
-			bytes = bytes.concat(toVarLengthBytes(data.length));
-			bytes = bytes.concat(data);
-			return bytes;
-		};
-	}
+	var MIDIEvent = {
+		note: function(time, channel, type, note, velocity) {
+			this.getBytes = function() {
+				var bytes = toVarLenBytes(time);
+				var status = channel | ((type) ? MESSAGE_NOTEOFF_PREFIX : MESSAGE_NOTEON_PREFIX);
+				bytes.push(status, note, velocity);
+				return bytes;
+			};
+		},
+		programChange: function(time, channel, program) {
+			this.getBytes = function() {
+				var bytes = toVarLenBytes(time);
+				var status = channel | MESSAGE_PROGRAMCHANGE_PREFIX;
+				bytes.push(status, program);
+				return bytes;
+			};
+		},
+		meta: function(type, data) {
+			this.getBytes = function() {
+				data = data || [];
+				var time = 0;
+				var bytes = toVarLenBytes(time);
+				bytes.push(META_EVENT_PREFIX, type);
+				bytes = bytes.concat(toVarLenBytes(data.length));
+				bytes = bytes.concat(data);
+				return bytes;
+			};
+		}
+	};
 
 	//
-	//  track class
+	//  MIDI Track class
 	//
-	function Track() {
+	function MIDITrack() {
 		var eventList = [];
 
-		this.id = null; // track ID
-
-		// exposed functions
-		/*
-		this.addTrackEvent = function(properties) {
-			if (properties && properties.type && properties.note) {
-				var time = properties.time || 0;
-				var channel = properties.channel || DEFAULT_CHANNEL;
-				var note = properties.note;
-				var type, velocity;
-				switch (properties.type.toLowerCase()) { 
-					case 'noteon':
-						type = 0;
-						velocity = properties.velocity || DEFAULT_VELOCITY;
-						break;
-					case 'noteoff':
-						type = 1;
-						velocity = 0;
-						break;
-					default: // not a valid event type
-						return;
-				}
-				if (channel >= 0 && channel <= 15 &&
-					note >= 0 && note <= 127 &&
-					velocity >= 0 && velocity <= 127) {
-
-					var noteEvent = new NoteEvent(time, channel, type, note, velocity);
-					eventList.push(noteEvent);
-				}
-			}
-		};
-		this.addMetaEvent = function(properties) {
-		};
-		*/
+		// public functions
 		this.setInstrument = function(properties) {
-			if (properties !== undefined &&
-				properties.id !== undefined) {
-
+			if (properties !== undefined && properties.instrument !== undefined) {
 				var time = properties.time || 0;
 				var channel = properties.channel || DEFAULT_CHANNEL;
-				var program = properties.id;
-				var programChangeEvent = new ProgramChangeEvent(time, channel, program);
-				eventList.push(programChangeEvent);
+				var program = properties.instrument;
+				if (channel >= 0 && channel <= MAX_CHANNEL) {
+					var e = new MIDIEvent.programChange(time, channel, program);
+					eventList.push(e);
+				}
 			}
 		};
 		this.noteOn = function(properties) {
-			if (properties !== undefined &&
-				properties.time !== undefined &&
-				properties.note !== undefined) {
-
+			if (properties !== undefined && properties.time !== undefined && properties.note !== undefined) {
 				var time = properties.time;
 				var channel = properties.channel || DEFAULT_CHANNEL;
-				var type = 0;
+				var type = 0; // note ON
 				var note = properties.note;
 				var velocity = properties.velocity || DEFAULT_VELOCITY;
-				if (channel >= 0 && channel <= 15 &&
-					note >= 0 && note <= 127 &&
-					velocity >= 0 && velocity <= 127) {
-
-					var noteEvent = new NoteEvent(time, channel, type, note, velocity);
-					eventList.push(noteEvent);
+				if (channel >= 0 && channel <= MAX_CHANNEL && note >= 0 && note <= MAX_NOTE && velocity >= 0 && velocity <= MAX_VELOCITY) {
+					var e = new MIDIEvent.note(time, channel, type, note, velocity);
+					eventList.push(e);
 				}
 			}
 		};
 		this.noteOff = function(properties) {
-			if (properties !== undefined &&
-				properties.time !== undefined &&
-				properties.note !== undefined) {
-
+			if (properties !== undefined && properties.time !== undefined && properties.note !== undefined) {
 				var time = properties.time;
 				var channel = properties.channel || DEFAULT_CHANNEL;
 				var note = properties.note;
-				var type = 1;
+				var type = 1; // note OFF
 				var velocity = 0;
-				if (channel >= 0 && channel <= 15 &&
-					note >= 0 && note <= 127) {
-
-					var noteEvent = new NoteEvent(time, channel, type, note, velocity);
-					eventList.push(noteEvent);
+				if (channel >= 0 && channel <= MAX_CHANNEL && note >= 0 && note <= MAX_NOTE) {
+					var e = new MIDIEvent.note(time, channel, type, note, velocity);
+					eventList.push(e);
 				}
 			}
 		};
-		this.getBytes = function() {
+		this.getBytes = function(metaEvents) {
 			var bytes = TRACK_CHUNK_TYPE;
 			var eventBytes = [];
-			// get event bytes
-			if (this.id === 0) {
-				// first track
-				// add time signature event
-				var timeSigData = [0x04, 0x02, 0x18, 0x08];
-				var timeSigEvent = new MetaEvent(META_EVENT_TIMESIG, timeSigData);
-				// add tempo event
-				var tempoData = [0x08, 0x7a, 0x23];
-				var tempoEvent = new MetaEvent(META_EVENT_TEMPO, tempoData);
+			var i;
+			// if we have meta events, add those prior to note data
+			// used for defining time signature and tempo
+			if (metaEvents instanceof Array) {
+				var n_metaEvents = metaEvents.length;
+				for (i = 0; i < n_metaEvents; i++) {
+					eventBytes = eventBytes.concat(metaEvents[i].getBytes());
+				}
 			}
-			var events_n = eventList.length;
-			for (var i = 0; i < events_n; i++) {
+			// get event bytes
+			var n_events = eventList.length;
+			for (i = 0; i < n_events; i++) {
 				eventBytes = eventBytes.concat(eventList[i].getBytes());
 			}
-			// add end of track event
-			var endEvent = new MetaEvent(META_EVENT_END);
+			// end of track event
+			var endEvent = new MIDIEvent.meta(META_EVENT_END);
 			eventBytes = eventBytes.concat(endEvent.getBytes());
-			// finalize and return track bytes
+			// track length
 			bytes = bytes.concat(toBytes(eventBytes.length, 4));
-			// add user defined event bytes
+			// finalize and return bytes
 			bytes = bytes.concat(eventBytes);
 			return bytes;
 		};
 	}
 
 	//
-	//  file class
+	//  MIDI File class
 	//
-	function File(properties) {
-		var tpb = (properties && properties.ticksPerBeat && properties.ticksPerBeat > 0 && properties.ticksPerBeat <= 65535)
+	function MIDIFile(properties) {
+		var tpb = (properties && properties.ticksPerBeat && properties.ticksPerBeat > 0 && properties.ticksPerBeat <= MAX_TICKSPERBEAT)
 			? properties.ticksPerBeat
 			: DEFAULT_TICKSPERBEAT;
 
-		tempo = (properties && properties.tempo && properties.tempo > 0)
+		var tempo = (properties && properties.tempo && properties.tempo > 0)
 			? properties.tempo
 			: DEFAULT_TEMPO;
 
-		timesig = (properties && properties.timeSignature instanceof Array && properties.timeSignature.length === 2)
-			? [properties.timeSignature[0], properties.timeSignature[1]]
-			: [DEFAULT_NUMERATOR, DEFAULT_DENOMINATOR];
-
 		var trackList = [];
 
-		function getHeaderChunk() {
-			var bytes;
+		function getHeader() {
 			var n_tracks = trackList.length;
-			bytes = HEADER_CHUNK_TYPE;
+			var bytes = HEADER_CHUNK_TYPE;
 			bytes = bytes.concat(HEADER_CHUNK_LENGTH);
 			bytes = bytes.concat((n_tracks > 1) ? HEADER_CHUNK_FORMAT1 : HEADER_CHUNK_FORMAT0);
 			bytes = bytes.concat(toBytes(n_tracks, 2));
 			bytes = bytes.concat(toBytes(tpb, 2));
 			return bytes;
 		}
+		function getTimeSigAndTempoMeta() {
+			var timeSigEvent = new MIDIEvent.meta(META_EVENT_TIMESIG, META_TIMESIG_DATA);
+			//var tempoData = [0x08, 0x7a, 0x24];
+			var tempoData = toBytes(Math.floor(6e7 / tempo), 3);
+			var tempoEvent = new MIDIEvent.meta(META_EVENT_TEMPO, tempoData);
+			return [timeSigEvent, tempoEvent];
+		}
 		function buildFile() {
-			var bytes = getHeaderChunk();
 			var n_tracks = trackList.length;
+			var bytes = getHeader();
+			// create time signature and tempo meta events
+			var metaEvents = getTimeSigAndTempoMeta();
+			// for format 1 MIDI, add a meta track with time signature and tempo data
+			if (n_tracks > 1) {
+				var metaTrack = new MIDITrack();
+				// add meta track bytes
+				bytes = bytes.concat(metaTrack.getBytes(metaEvents));
+			}
+			// add track data
 			for (var i = 0; i < n_tracks; i++) {
 				var track = trackList[i];
-				bytes = bytes.concat(track.getBytes());
+				var trackBytes = (n_tracks === 1 && i === 0)
+					? track.getBytes(metaEvents) // format 0 MIDI, add time signature and tempo data
+					: track.getBytes();
+				bytes = bytes.concat(trackBytes);
 			}
 			return bytes;
 		}
 
-		// exposed functions
+		// public functions
 		this.addTrack = function(track) {
-			track.id = trackList.length;
 			trackList.push(track);
 		};
 		this.getBytes = function() {
@@ -273,13 +248,16 @@ var MIDIfw = (function() { "use strict";
 		};
 	}
 
+	//
 	// public API
+	//
 	return {
 		createTrack: function() {
-			return new Track();
+			return new MIDITrack();
 		},
 		createFile: function(properties) {
-			return new File(properties);
+			return new MIDIFile(properties);
 		}
 	};
+
 }());

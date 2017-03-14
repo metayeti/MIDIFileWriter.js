@@ -10,7 +10,7 @@ function getMIDI() {
 	
 	track.setInstrument({
 		time: 0,
-		id: 79
+		instrument: 79
 	});
 	track.noteOn({
 		time: 240,
@@ -21,6 +21,16 @@ function getMIDI() {
 		time: 58,
 		note: 51
 	});
+	track.noteOn({
+		time: 500,
+		note: 52,
+		velocity: 127
+	});
+	track.noteOff({
+		time: 128,
+		note: 52
+	});
+	/*
 	track.noteOn({
 		time: 58,
 		note: 51,
@@ -39,10 +49,11 @@ function getMIDI() {
 		time: 300,
 		note: 51
 	});
+	*/
 	
 	var file = MIDIfw.createFile({
-		tempo: 60,
-		timeSignature: [4, 4]
+		tempo: 90,
+		ticksPerBeat: 200
 	});
 	
 	file.addTrack(track);
