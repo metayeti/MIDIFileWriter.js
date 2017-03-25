@@ -25,7 +25,8 @@ var MIDIfw = (function() { "use strict";
 	var META_EVENT_END = 0x2f;
 	var META_EVENT_TIMESIG = 0x58;
 	var META_EVENT_TEMPO = 0x51;
-	var META_TIMESIG_DATA = [0x04, 0x02, 0x18, 0x08]; // hardcoded 4/4
+	var META_TIMESIG_CC = 0x18; // 24 MIDI clocks per quarter note
+	var META_TIMESIG_BB = 0x08; // 8 1/32nds per quarter note (quarternote per quarternote)
 	var DEFAULT_CHANNEL = 0;
 	var DEFAULT_VELOCITY = 64;
 	var DEFAULT_TICKSPERBEAT = 96;
@@ -37,6 +38,7 @@ var MIDIfw = (function() { "use strict";
 	var MAX_VELOCITY = 127;
 	var MAX_TICKSPERBEAT = 65535;
 	var DATAURI_PREFIX = 'data:audio/midi;base64,';
+	var NOTE_NAMES = ['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a', 'a#', 'b'];
 	
 	//
 	//  helper functions
@@ -121,6 +123,26 @@ var MIDIfw = (function() { "use strict";
 
 		var eventList = [];
 
+		function parseNote(rawnote) {
+			if (typeof rawnote === 'string') {
+				var noteName;
+				var octave = 5;
+				var hasOctave = false;
+				if (rawnote.length > 1) {
+					var octaveStr = rawnote[rawnote.length - 1];
+					if (!isNaN(octaveStr)) {
+						octave = parseInt(octaveStr);
+						hasOctave = true;
+					}
+				}
+				noteName = (hasOctave)
+					? rawnote.slice(0, properties.note.length - 1)
+					: rawnote
+				return NOTE_NAMES.indexOf(noteName.toLowerCase()) % 12 + 12 * octave;	
+			}
+			return rawnote;
+		}
+
 		// public functions
 		this.setInstrument = function(properties) {
 			if (properties !== undefined && properties.instrument !== undefined) {
@@ -129,23 +151,25 @@ var MIDIfw = (function() { "use strict";
 				var e = new MIDIEvent.programChange(time, channel, program);
 				eventList.push(e);
 			}
+			return this;
 		};
 		this.noteOn = function(properties) {
 			if (properties !== undefined && properties.time !== undefined && properties.note !== undefined) {
 				var time = properties.time;
 				var type = 0; // note ON
-				var note = properties.note;
+				var note = parseNote(properties.note);
 				var velocity = properties.velocity || DEFAULT_VELOCITY;
 				if (note >= 0 && note <= MAX_NOTE && velocity >= 0 && velocity <= MAX_VELOCITY) {
 					var e = new MIDIEvent.note(time, channel, type, note, velocity);
 					eventList.push(e);
 				}
 			}
+			return this;
 		};
 		this.noteOff = function(properties) {
 			if (properties !== undefined && properties.time !== undefined && properties.note !== undefined) {
 				var time = properties.time;
-				var note = properties.note;
+				var note = parseNote(properties.note);
 				var type = 1; // note OFF
 				var velocity = 0;
 				if (note >= 0 && note <= MAX_NOTE) {
@@ -153,13 +177,13 @@ var MIDIfw = (function() { "use strict";
 					eventList.push(e);
 				}
 			}
+			return this;
 		};
 		this.getBytes = function(metaEvents) {
 			var bytes = TRACK_CHUNK_TYPE;
 			var eventBytes = [];
 			var i;
 			// if we have meta events, add those prior to note data
-			// used for defining time signature and tempo
 			if (metaEvents instanceof Array) {
 				var n_metaEvents = metaEvents.length;
 				for (i = 0; i < n_metaEvents; i++) {
@@ -189,10 +213,12 @@ var MIDIfw = (function() { "use strict";
 		var tpb = (properties && properties.ticksPerBeat && properties.ticksPerBeat > 0 && properties.ticksPerBeat <= MAX_TICKSPERBEAT)
 			? properties.ticksPerBeat
 			: DEFAULT_TICKSPERBEAT;
-
 		var tempo = (properties && properties.tempo && properties.tempo > 0)
 			? properties.tempo
 			: DEFAULT_TEMPO;
+		var timeSig = (properties && properties.timeSignature instanceof Array && properties.timeSignature.length === 2)
+			? [properties.timeSignature[0], properties.timeSignature[1]]
+			: [DEFAULT_NUMERATOR, DEFAULT_DENOMINATOR];
 
 		var trackList = [];
 
@@ -207,7 +233,15 @@ var MIDIfw = (function() { "use strict";
 			return bytes;
 		}
 		function getTimeSigAndTempoMeta() {
-			var timeSigEvent = new MIDIEvent.meta(META_EVENT_TIMESIG, META_TIMESIG_DATA);
+			var numerator = timeSig[0];
+			var denominator = timeSig[1];
+			if (denominator === 0 || denominator & (denominator - 1)) {
+				denominator = 4; // back to default if not power of 2
+			}
+			var timeSigData = toBytes(numerator, 1);
+			timeSigData = timeSigData.concat(toBytes(Math.log2(denominator), 1));
+			timeSigData.push(META_TIMESIG_CC, META_TIMESIG_BB);
+			var timeSigEvent = new MIDIEvent.meta(META_EVENT_TIMESIG, timeSigData);
 			var tempoData = toBytes(Math.floor(6e7 / tempo), 3);
 			var tempoEvent = new MIDIEvent.meta(META_EVENT_TEMPO, tempoData);
 			return [timeSigEvent, tempoEvent];
@@ -217,7 +251,7 @@ var MIDIfw = (function() { "use strict";
 			var bytes = getHeader();
 			// create time signature and tempo meta events
 			var metaEvents = getTimeSigAndTempoMeta();
-			// for format 1 MIDI, add a meta track with time signature and tempo data
+			// format 1 MIDI, add a meta track with time signature and tempo data
 			if (n_tracks > 1) {
 				var metaTrack = new MIDITrack();
 				// add meta track bytes
@@ -237,6 +271,7 @@ var MIDIfw = (function() { "use strict";
 		// public functions
 		this.addTrack = function(track) {
 			trackList.push(track);
+			return this;
 		};
 		this.getBytes = function() {
 			return new Uint8Array(buildFile());

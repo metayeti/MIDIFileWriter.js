@@ -11,42 +11,38 @@ function getMIDI() {
 	track.setInstrument({
 		time: 0,
 		instrument: 3
-	});
-	track.noteOn({
+	}).noteOn({
 		time: 0,
-		note: 50,
+		note: 'c#',
 		velocity: 127
-	});
-	track.noteOff({
+	}).noteOff({
 		time: 24,
-		note: 50
-	});
-	track.noteOn({
+		note: 'C#'
+	}).noteOn({
 		time: 0,
-		note: 56,
+		note: 'd',
 		velocity: 127
-	});
-	track.noteOff({
+	}).noteOff({
 		time: 24,
-		note: 56
-	});
-		track.noteOn({
+		note: 'd'
+	}).noteOn({
 		time: 0,
-		note: 60,
+		note: 'e',
 		velocity: 127
-	});
-	track.noteOff({
+	}).noteOff({
 		time: 96,
-		note: 60
+		note: 'e'
 	});
-	
 	
 	var file = MIDIfw.createFile({
-		tempo: 90, // optional tempo
-		ticksPerBeat: 96 // optional division
+		tempo: 90, // optional (default=60)
+		ticksPerBeat: 96, // optional (default=96)
+		timeSignature: [4,4] // optional (default=[4,4])
 	});
 	
 	file.addTrack(track);
+	//console.log(file.getBase64());
+	
 	window.open(file.getDataURI());
 }
 
