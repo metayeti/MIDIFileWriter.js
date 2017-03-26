@@ -1,7 +1,7 @@
 /*
  *  MIDIFileWriter
  *
- *  0.8.0
+ *  0.9.0
  *
  *  (c) 2017 Danijel Durakovic
  *  MIT license
@@ -9,7 +9,6 @@
  */
 
 var MIDIfw = (function() { "use strict";
-
 	//
 	//  constants
 	// 
@@ -39,6 +38,9 @@ var MIDIfw = (function() { "use strict";
 	var MAX_TICKSPERBEAT = 65535;
 	var DATAURI_PREFIX = 'data:audio/midi;base64,';
 	var NOTE_NAMES = ['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a', 'a#', 'b'];
+	var INSTRUMENT_NAMES = ['piano', 'chrome', 'organ', 'guitar', 'bass', 'string',
+		'ensemble', 'brass', 'reed', 'pipe', 'synthlead', 'synthpad', 'synthfx',
+		'ethnic', 'percussive', 'sfx'];
 	
 	//
 	//  helper functions
@@ -136,18 +138,39 @@ var MIDIfw = (function() { "use strict";
 					}
 				}
 				noteName = (hasOctave)
-					? rawnote.slice(0, properties.note.length - 1)
-					: rawnote
+					? rawnote.slice(0, rawnote.length - 1)
+					: rawnote;
 				return NOTE_NAMES.indexOf(noteName.toLowerCase()) % 12 + 12 * octave;	
 			}
 			return rawnote;
+		}
+		
+		function parseInstrument(rawinstrument) {
+			if (typeof rawinstrument === 'string') {
+				var instrument;
+				var variation = 1;
+				var hasVariation = false;
+				var variationStr = rawinstrument[rawinstrument.length - 1];
+				if (!isNaN(variationStr)) {
+					variation = parseInt(variationStr);	
+					if (variation < 1 || variation > 8) {
+						variation = 1;
+					}
+					hasVariation = true;
+				}
+				instrument = (hasVariation)
+					? rawinstrument.slice(0, rawinstrument.length - 1)
+					: rawinstrument;
+				return INSTRUMENT_NAMES.indexOf(instrument.toLowerCase()) * 8 + variation;
+			}
+			return rawinstrument;
 		}
 
 		// public functions
 		this.setInstrument = function(properties) {
 			if (properties !== undefined && properties.instrument !== undefined) {
 				var time = properties.time || 0;
-				var program = properties.instrument;
+				var program = parseInstrument(properties.instrument);
 				var e = new MIDIEvent.programChange(time, channel, program);
 				eventList.push(e);
 			}
@@ -269,10 +292,14 @@ var MIDIfw = (function() { "use strict";
 		}
 
 		// public functions
-		this.addTrack = function(track) {
-			trackList.push(track);
+		this.addTrack = function(/**/) {
+			for (var i = 0; i < arguments.length; i++) {
+				var track = arguments[i];
+				trackList.push(track);
+			}
 			return this;
 		};
+		this.addTracks = this.addTrack,
 		this.getBytes = function() {
 			return new Uint8Array(buildFile());
 		};
