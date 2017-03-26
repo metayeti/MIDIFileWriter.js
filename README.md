@@ -11,7 +11,7 @@ var track = MIDIfw.createTrack();
 // add a single note to the track
 //
 // time represents delta time from the last event
-// an eithet note is given by ticksPerBeat/8 = 96/8 = 12,
+// an eighth note is given by ticksPerBeat/8 = 96/8 = 12,
 // a quarter note would be ticksPerBeat/4 = 96/4 = 24,
 // a half note would be ticksPerBeat/2 = 96/2 = 48
 // a whole note then is simply ticksPerBeat/1 = 96/1 = 96
@@ -115,5 +115,7 @@ file.getDataURI(); // returns MIDI file in form of a DataURI
 ```
 
 ## License
+
+Copyright (c) 2017 Danijel Durakovic
 
 MIT License
