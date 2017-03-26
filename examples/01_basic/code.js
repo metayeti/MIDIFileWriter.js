@@ -17,11 +17,11 @@ function getMIDI() {
 	// a half note would be ticksPerBeat/2 = 96/2 = 48
 	// a whole note then is simply ticksPerBeat/1 = 96/1 = 96
 	//
-	// note can either be an valid MIDI note number or a string representing the note
+	// note can either be a valid MIDI note number or a string representing the note
 	// you can add an octave number to the string, e.g. 'c4', 'c#4'
 	// default octave is 5
 	//
-	// velocity is a value from 1 to 127, not required for noteOff
+	// velocity is a value in range 1 to 127 and isn't required for noteOff
 	track.noteOn({
 		time: 0,
 		note: 'c',

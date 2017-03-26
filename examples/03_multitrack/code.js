@@ -6,13 +6,13 @@
  */
  
 function getMIDI() {
-
 	// create a MIDI track on channel 0
+	// channel is a value in range 0 to 15
 	var track1 = MIDIfw.createTrack({
 		channel: 0
 	});
 
-	// select the instrument and add some notes
+	// set the instrument and add some notes
 	track1.setInstrument({
 		time: 0,
 		instrument: 'guitar'
@@ -32,6 +32,10 @@ function getMIDI() {
 
 	// create another MIDI track on channel 1
 	var track2 = MIDIfw.createTrack({
+		channel: 1
+	});
+	// set the instrument and add some notes
+	track2.setInstrument({
 		time: 0,
 		instrument: 'bass'
 	}).noteOn({

@@ -16,11 +16,11 @@ var track = MIDIfw.createTrack();
 // a half note would be ticksPerBeat/2 = 96/2 = 48
 // a whole note then is simply ticksPerBeat/1 = 96/1 = 96
 //
-// note can either be an valid MIDI note number or a string representing the note
+// note can either be a valid MIDI note number or a string representing the note
 // you can add an octave number to the string, e.g. 'c4', 'c#4'
 // default octave is 5
 //
-// velocity is a value from 1 to 127, not required for noteOff
+// velocity is a value in range 1 to 127 and isn't required for noteOff
 track.noteOn({
 	time: 0,
 	note: 'c',
@@ -64,46 +64,51 @@ Valid instruments are: piano, chrome, organ, guitar, bass, string, ensemble, bra
 It is possible to create multitrack MIDI files. The export will be a [Format 1 MIDI file](http://www.music.mcgill.ca/~ich/classes/mumt306/StandardMIDIfileformat.html#BM2_2). The library automatically picks between Format 0 for single-tracked files and Format 1 for multi-tracked. Each track must use a separate channel in order for notes to be played simultaneously:
 
 ```javascript
-	// create a MIDI track on channel 0
-	var track1 = MIDIfw.createTrack({
-		channel: 0
-	});
+// create a MIDI track on channel 0
+// channel is a value in range 0 to 15
+var track1 = MIDIfw.createTrack({
+	channel: 0
+});
 
-	// select the instrument and add some notes
-	track1.setInstrument({
-		time: 0,
-		instrument: 'guitar'
-	}).noteOn({
-		time: 0,
-		note: 'c'
-	}).noteOff({
-		time: 24,
-		note: 'c'
-	}).noteOn({
-		time: 0,
-		note: 'c'
-	}).noteOff({
-		time: 96,
-		note: 'c'
-	});
+// set the instrument and add some notes
+track1.setInstrument({
+	time: 0,
+	instrument: 'guitar'
+}).noteOn({
+	time: 0,
+	note: 'c'
+}).noteOff({
+	time: 24,
+	note: 'c'
+}).noteOn({
+	time: 0,
+	note: 'c'
+}).noteOff({
+	time: 96,
+	note: 'c'
+});
 
-	// create another MIDI track on channel 1
-	var track2 = MIDIfw.createTrack({
-		time: 0,
-		instrument: 'bass'
-	}).noteOn({
-		time: 0,
-		note: 'c3'
-	}).noteOff({
-		time: 96,
-		note: 'c3'
-	});
+// create another MIDI track on channel 1
+var track2 = MIDIfw.createTrack({
+	channel: 1
+});
+// set the instrument and add some notes
+track2.setInstrument({
+	time: 0,
+	instrument: 'bass'
+}).noteOn({
+	time: 0,
+	note: 'c3'
+}).noteOff({
+	time: 96,
+	note: 'c3'
+});
 
-	// create a MIDI file
-	var file = MIDIfw.createFile();
-	
-	// you can use addTrack (or addTracks) with any number of arguments to add multiple tracks
-	file.addTracks(track1, track2);
+// create a MIDI file
+var file = MIDIfw.createFile();
+
+// you can use addTrack (or addTracks) with any number of arguments to add multiple tracks
+file.addTracks(track1, track2);
 ```
 
 To retreive MIDI data, use one of the following:
