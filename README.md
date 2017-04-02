@@ -47,20 +47,6 @@ var dataURI = file.getDataURI();
 window.open(dataURI);
 ```
 
-To change instruments:
-
-```javascript
-// set an instrument and then add multiple notes to the track by chaining event calls
-//
-// instrument can either be a valid MIDI instrument number or a string representing the instrument
-// optionally, you can add an instrument variation in range 1 to 8 (for example, 'piano2' or 'guitar7')
-// default variation is 1
-track.setInstrument({
-	time: 0,
-	instrument: 'chrome'
-});
-```
-
 Event calls are chainable:
 
 ```
@@ -71,6 +57,20 @@ track.noteOn({
 }).noteOff({
 	time: 96,
 	note: 'c#5'
+});
+```
+
+Changing instruments:
+
+```javascript
+// set an instrument and then add multiple notes to the track by chaining event calls
+//
+// instrument can either be a valid MIDI instrument number or a string representing the instrument
+// optionally, you can add an instrument variation in range 1 to 8 (for example, 'piano2' or 'guitar7')
+// default variation is 1
+track.setInstrument({
+	time: 0,
+	instrument: 'chrome'
 });
 ```
 
