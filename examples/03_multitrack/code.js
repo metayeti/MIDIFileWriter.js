@@ -20,13 +20,13 @@ function getMIDI() {
 		time: 0,
 		note: 'c'
 	}).noteOff({
-		time: 24,
+		time: 48,
 		note: 'c'
 	}).noteOn({
 		time: 0,
 		note: 'c'
 	}).noteOff({
-		time: 96,
+		time: 48,
 		note: 'c'
 	});
 

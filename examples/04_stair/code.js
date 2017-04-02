@@ -1,7 +1,7 @@
 /*
  *  MIDIFileWriter Stair Example
  *
- *  Generates a MIDI file that cycles through same few notes.
+ *  Generates a MIDI file that cycles through a range of notes.
  *
  */
  

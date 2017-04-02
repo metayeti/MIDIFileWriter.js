@@ -1,6 +1,6 @@
 ## MIDIFileWriter
 
-This is a lightweight library providing a quick and dirty way to create MIDI files on the fly within the browser.
+This is a lightweight library providing a quick and easy way to create MIDI files on the fly within the browser.
 
 The API is straightforward to use:
 
@@ -53,7 +53,6 @@ Event calls are chainable:
 track.noteOn({
 	time: 0,
 	note: 'c#5',
-	velocity: 127
 }).noteOff({
 	time: 96,
 	note: 'c#5'
@@ -63,8 +62,6 @@ track.noteOn({
 Changing instruments:
 
 ```javascript
-// set an instrument and then add multiple notes to the track by chaining event calls
-//
 // instrument can either be a valid MIDI instrument number or a string representing the instrument
 // optionally, you can add an instrument variation in range 1 to 8 (for example, 'piano2' or 'guitar7')
 // default variation is 1
@@ -93,13 +90,13 @@ track1.setInstrument({
 	time: 0,
 	note: 'c'
 }).noteOff({
-	time: 24,
+	time: 48,
 	note: 'c'
 }).noteOn({
 	time: 0,
 	note: 'c'
 }).noteOff({
-	time: 96,
+	time: 48,
 	note: 'c'
 });
 
