@@ -12,8 +12,8 @@ function getMIDI() {
 	// set an instrument and then add multiple notes to the track by chaining event calls
 	//
 	// instrument can either be a valid MIDI instrument number or a string representing the instrument
-	// you can add an instrument type in range 1 to 8 (for example, 'piano2' or 'guitar7')
-	// default type is 1
+	// optionally, you can add an instrument variation in range 1 to 8 (for example, 'piano2' or 'guitar7')
+	// default variation is 1
 	track.setInstrument({
 		time: 0,
 		instrument: 'chrome'

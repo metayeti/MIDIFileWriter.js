@@ -25,7 +25,7 @@ track.noteOn({
 	time: 0,
 	note: 'c',
 	velocity: 127 // optional (default=64)
-})
+});
 track.noteOff({
 	time: 96,
 	note: 'c'
@@ -50,13 +50,28 @@ window.open(dataURI);
 To change instruments:
 
 ```javascript
+// set an instrument and then add multiple notes to the track by chaining event calls
+//
 // instrument can either be a valid MIDI instrument number or a string representing the instrument
-// you can add an instrument type in range of 1 to 8 (for example, 'piano2' or 'guitar7')
-// default type is 1
+// optionally, you can add an instrument variation in range 1 to 8 (for example, 'piano2' or 'guitar7')
+// default variation is 1
 track.setInstrument({
 	time: 0,
 	instrument: 'chrome'
-})
+});
+```
+
+Event calls are chainable:
+
+```
+track.noteOn({
+	time: 0,
+	note: 'c#5',
+	velocity: 127
+}).noteOff({
+	time: 96,
+	note: 'c#5'
+});
 ```
 
 Valid instruments are: piano, chrome, organ, guitar, bass, string, ensemble, brass, reed, pipe, synthlead, synthpad, synthfx, ethnic, percussive, sfx.

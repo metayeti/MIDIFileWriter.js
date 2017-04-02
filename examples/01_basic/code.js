@@ -26,7 +26,7 @@ function getMIDI() {
 		time: 0,
 		note: 'c',
 		velocity: 127 // optional (default=64)
-	})
+	});
 	track.noteOff({
 		time: 96,
 		note: 'c'
