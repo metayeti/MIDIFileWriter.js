@@ -20,7 +20,7 @@ function getMIDI() {
 		time: 0,
 		note: 'g4'
 	}).noteOff({
-		time: 192,  // time where chord ends
+		time: 192,  // time when chord ends
 		note: 'c4'
 	}).noteOff({
 		time: 0,    // close other notes at same time
@@ -31,7 +31,7 @@ function getMIDI() {
 	});	
 
 	track.noteOn({
-		time: 96,   // time where chord starts
+		time: 96,   // time when chord starts
 		note: 'd4'
 	}).noteOn({
 		time: 0,    // open other notes at the same time
