@@ -73,7 +73,7 @@ track.setInstrument({
 
 Valid instruments are: piano, chrome, organ, guitar, bass, string, ensemble, brass, reed, pipe, synthlead, synthpad, synthfx, ethnic, percussive, sfx.
 
-It is possible to create multitrack MIDI files. The export will be a [Format 1 MIDI file](http://www.music.mcgill.ca/~ich/classes/mumt306/StandardMIDIfileformat.html#BM2_2). The library automatically picks between Format 0 for single-tracked files and Format 1 for multi-tracked. Each track must use a separate channel in order for notes to be played simultaneously:
+It is possible to create multitrack MIDI files. The export will be a [Format 1 MIDI file](http://www.music.mcgill.ca/~ich/classes/mumt306/StandardMIDIfileformat.html#BM2_2). The library automatically picks between Format 0 for single-tracked files and Format 1 for multi-tracked files. Each track must use a separate channel in order for notes to be played simultaneously:
 
 ```javascript
 // create a MIDI track on channel 0

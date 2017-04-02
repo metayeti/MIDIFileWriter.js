@@ -259,7 +259,7 @@ var MIDIfw = (function() { "use strict";
 			var numerator = timeSig[0];
 			var denominator = timeSig[1];
 			if (denominator === 0 || denominator & (denominator - 1)) {
-				denominator = 4; // back to default if not power of 2
+				denominator = DEFAULT_DENOMINATOR; // back to default if not power of 2
 			}
 			var timeSigData = toBytes(numerator, 1);
 			timeSigData = timeSigData.concat(toBytes(Math.log2(denominator), 1));
