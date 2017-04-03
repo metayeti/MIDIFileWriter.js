@@ -26,7 +26,7 @@ function getMIDI() {
 	// list of MIDI tracks
 	var tracks = [];
 
-	// parse song data
+	// go through each track in song data
 	var n_tracks = song_data.length;
 	for (var i = 0; i < n_tracks; i++) {
 		// create a MIDI track on channel i
@@ -39,13 +39,13 @@ function getMIDI() {
 			time: 0,
 			instrument: instruments[i]
 		});
-		// parse notes
-		var notes_data = song_data[i];
-		var n_notes = notes_data.length;
+		// go through each note in track data
+		var track_data = song_data[i];
+		var n_notes = track_data.length;
 		for (var j = 0; j < n_notes; j++) {
-			var note_raw = notes_data[j];
+			var note_data = track_data[j];
 			// extract note parts
-			var note_parts = note_raw.split(' ');
+			var note_parts = note_data.split(' ');
 			var note_name = note_parts[0];
 			var note_ontime = parseInt(note_parts[1]);
 			var note_offtime = parseInt(note_parts[2]);

@@ -1,6 +1,6 @@
 ## MIDIFileWriter
 
-This is a lightweight library providing a quick and easy way to create MIDI files on the fly within the browser.
+A lightweight JavaScript library providing an easy way to create MIDI files on the fly within the browser.
 
 The API is straightforward to use:
 
