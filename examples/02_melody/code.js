@@ -12,6 +12,9 @@ function getMIDI() {
 	// set an instrument and then add multiple notes to the track by chaining event calls
 	//
 	// instrument can either be a valid MIDI instrument number or a string representing the instrument
+	// instruments to pick from are: piano, chrome, organ, guitar, bass, string, ensemble, brass, reed,
+	// pipe, synthlead, synthpad, synthfx, ethnic, percussive, sfx
+	//
 	// optionally, you can add an instrument variation in range 1 to 8 (for example, 'piano2' or 'guitar7')
 	// default variation is 1
 	track.setInstrument({

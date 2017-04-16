@@ -11,7 +11,7 @@ function getMIDI() {
 	var track1 = MIDIfw.createTrack({
 		channel: 0
 	});
-
+	
 	// set the instrument and add some notes
 	track1.setInstrument({
 		time: 0,
@@ -34,6 +34,7 @@ function getMIDI() {
 	var track2 = MIDIfw.createTrack({
 		channel: 1
 	});
+	
 	// set the instrument and add some notes
 	track2.setInstrument({
 		time: 0,

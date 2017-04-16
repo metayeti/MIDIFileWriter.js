@@ -1,4 +1,4 @@
-## MIDIFileWriter
+## MIDIFileWriter.js
 
 A lightweight JavaScript library providing an easy way to create MIDI files on the fly within the browser.
 
@@ -47,7 +47,7 @@ var dataURI = file.getDataURI();
 window.open(dataURI);
 ```
 
-Event calls are chainable:
+Event calls can be chained:
 
 ```
 track.noteOn({
@@ -104,6 +104,7 @@ track1.setInstrument({
 var track2 = MIDIfw.createTrack({
 	channel: 1
 });
+
 // set the instrument and add some notes
 track2.setInstrument({
 	time: 0,
