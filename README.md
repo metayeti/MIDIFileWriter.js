@@ -1,6 +1,8 @@
 ## MIDIFileWriter.js
 
-A lightweight JavaScript library providing an easy way to create MIDI files on the fly within the browser.
+A lightweight JavaScript library providing an easy way to create basic MIDI files on the fly within the browser.
+
+Please note that this library only implements a minimal subset of the MIDI standard. This version has support for noteOn, noteOff and setInstrument (program change) events.
 
 The API is straightforward to use:
 
@@ -127,10 +129,12 @@ file.addTracks(track1, track2);
 To retreive MIDI data, use one of the following:
 
 ```javascript
-file.getBytes(); // returns MIDI file in form of a byte array
-file.getBase64(); // returns MIDI file in form of a Base64 string
-file.getDataURI(); // returns MIDI file in form of a DataURI
+file.getBytes(); // returns MIDI file as a byte array
+file.getBase64(); // returns MIDI file as a Base64 string
+file.getDataURI(); // returns MIDI file as a DataURI
 ```
+
+See the examples folder for more examples on how to use the library.
 
 ## License
 

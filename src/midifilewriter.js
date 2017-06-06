@@ -1,7 +1,7 @@
 /*
- *  MIDIFileWriter
+ *  MIDIFileWriter.js
  *
- *  0.9.0
+ *  1.0.0
  *
  *  (c) 2017 Danijel Durakovic
  *  MIT license
@@ -32,6 +32,8 @@ var MIDIfw = (function() { "use strict";
 	var DEFAULT_TEMPO = 60;
 	var DEFAULT_NUMERATOR = 4;
 	var DEFAULT_DENOMINATOR = 4;
+	var DEFAULT_OCTAVE = 5; // default note octave
+	var DEFAULT_VARIATION = 1; // default instrument variation
 	var MAX_CHANNEL = 15;
 	var MAX_NOTE = 127;
 	var MAX_VELOCITY = 127;
@@ -128,7 +130,7 @@ var MIDIfw = (function() { "use strict";
 		function parseNote(rawnote) {
 			if (typeof rawnote === 'string') {
 				var noteName;
-				var octave = 5;
+				var octave = DEFAULT_OCTAVE;
 				var hasOctave = false;
 				if (rawnote.length > 1) {
 					var octaveStr = rawnote[rawnote.length - 1];
@@ -148,7 +150,7 @@ var MIDIfw = (function() { "use strict";
 		function parseInstrument(rawinstrument) {
 			if (typeof rawinstrument === 'string') {
 				var instrument;
-				var variation = 1;
+				var variation = DEFAULT_VARIATION;
 				var hasVariation = false;
 				var variationStr = rawinstrument[rawinstrument.length - 1];
 				if (!isNaN(variationStr)) {

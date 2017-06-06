@@ -1,0 +1,2 @@
+/* MIDIFileWriter.js 1.0.0
+ * (c) 2017 Danijel Durakovic MIT license */
