@@ -1,0 +1,8 @@
+---- Building the library: -------
+
+1) Install node.js
+2) install uglifyjs:
+
+npm -g install uglify-js
+
+3) Run "build"
