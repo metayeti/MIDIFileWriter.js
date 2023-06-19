@@ -1,0 +1,13 @@
+{
+	"source_dir": "src/",
+	"destination_dir": "dist/",
+	"sources": [
+		{
+			"file": "midifilewriter.js",
+			"header": [
+				"/* MIDIFileWriter.js 1.0.0",
+				" * (c) $YEAR$ Danijel Durakovic MIT license */"
+			]
+		}
+	]
+}
